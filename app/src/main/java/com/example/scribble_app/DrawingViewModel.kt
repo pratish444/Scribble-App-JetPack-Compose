@@ -10,17 +10,32 @@ import kotlinx.coroutines.flow.update
 data class DrawingState(
     val selectedColor: Color = Color.Black,
     val currentPath: PathData? = null,
-    val paths: List<PathData> = emptyList()
+    val paths: List<PathData> = emptyList(),
+    val isDarkMode: Boolean = false,
+    val brushSize: Float = 10f
 )
 
+// Enhanced color palette with more modern colors
 val allColors = listOf(
-    Color.Black, Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta, Color.Cyan
+    Color.Black,
+    Color(0xFFFF6B6B), // Coral Red
+    Color(0xFF4ECDC4), // Turquoise
+    Color(0xFF45B7D1), // Sky Blue
+    Color(0xFF96CEB4), // Mint Green
+    Color(0xFFFECE47), // Sunny Yellow
+    Color(0xFFAD6EFF), // Lavender Purple
+    Color(0xFFFF8A80), // Light Pink
+    Color(0xFF80CBC4), // Teal
+    Color(0xFFFFAB40), // Orange
+    Color(0xFF9C27B0), // Deep Purple
+    Color(0xFF795548)  // Brown
 )
 
 data class PathData(
     val id: String,
     val color: Color,
-    val path: List<Offset>
+    val path: List<Offset>,
+    val brushSize: Float = 10f
 )
 
 sealed interface DrawingAction {
@@ -29,6 +44,9 @@ sealed interface DrawingAction {
     data object OnPathEnd: DrawingAction
     data class OnSelectColor(val color: Color): DrawingAction
     data object OnClearCanvasClick: DrawingAction
+    data object OnToggleDarkMode: DrawingAction
+    data class OnBrushSizeChange(val size: Float): DrawingAction
+    data object OnUndo: DrawingAction
 }
 
 class DrawingViewModel: ViewModel() {
@@ -42,6 +60,9 @@ class DrawingViewModel: ViewModel() {
             DrawingAction.OnNewPathStart -> onNewPathStart()
             DrawingAction.OnPathEnd -> onPathEnd()
             is DrawingAction.OnSelectColor -> onSelectColor(action.color)
+            DrawingAction.OnToggleDarkMode -> onToggleDarkMode()
+            is DrawingAction.OnBrushSizeChange -> onBrushSizeChange(action.size)
+            DrawingAction.OnUndo -> onUndo()
         }
     }
 
@@ -62,7 +83,8 @@ class DrawingViewModel: ViewModel() {
             currentPath = PathData(
                 id = System.currentTimeMillis().toString(),
                 color = it.selectedColor,
-                path = emptyList()
+                path = emptyList(),
+                brushSize = it.brushSize
             )
         ) }
     }
@@ -76,5 +98,22 @@ class DrawingViewModel: ViewModel() {
 
     private fun onClearCanvasClick() {
         _state.update { it.copy(currentPath = null, paths = emptyList()) }
+    }
+
+    private fun onToggleDarkMode() {
+        _state.update { it.copy(isDarkMode = !it.isDarkMode) }
+    }
+
+    private fun onBrushSizeChange(size: Float) {
+        _state.update { it.copy(brushSize = size) }
+    }
+
+    private fun onUndo() {
+        _state.update {
+            it.copy(
+                paths = if (it.paths.isNotEmpty()) it.paths.dropLast(1) else it.paths,
+                currentPath = null
+            )
+        }
     }
 }
