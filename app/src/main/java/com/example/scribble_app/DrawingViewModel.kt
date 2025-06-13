@@ -1,4 +1,4 @@
-package com.plcoding.drawinginjetpackcompose
+package com.example.scribble_app
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -14,13 +14,7 @@ data class DrawingState(
 )
 
 val allColors = listOf(
-    Color.Black,
-    Color.Red,
-    Color.Blue,
-    Color.Green,
-    Color.Yellow,
-    Color.Magenta,
-    Color.Cyan,
+    Color.Black, Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta, Color.Cyan
 )
 
 data class PathData(
@@ -38,7 +32,6 @@ sealed interface DrawingAction {
 }
 
 class DrawingViewModel: ViewModel() {
-
     private val _state = MutableStateFlow(DrawingState())
     val state = _state.asStateFlow()
 
@@ -53,9 +46,7 @@ class DrawingViewModel: ViewModel() {
     }
 
     private fun onSelectColor(color: Color) {
-        _state.update { it.copy(
-            selectedColor = color
-        ) }
+        _state.update { it.copy(selectedColor = color) }
     }
 
     private fun onPathEnd() {
@@ -79,16 +70,11 @@ class DrawingViewModel: ViewModel() {
     private fun onDraw(offset: Offset) {
         val currentPathData = state.value.currentPath ?: return
         _state.update { it.copy(
-            currentPath = currentPathData.copy(
-                path = currentPathData.path + offset
-            )
+            currentPath = currentPathData.copy(path = currentPathData.path + offset)
         ) }
     }
 
     private fun onClearCanvasClick() {
-        _state.update { it.copy(
-            currentPath = null,
-            paths = emptyList()
-        ) }
+        _state.update { it.copy(currentPath = null, paths = emptyList()) }
     }
 }
